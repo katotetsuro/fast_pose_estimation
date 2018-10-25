@@ -93,10 +93,12 @@ def decode(x):
     w = x[:, 4::6]
     h = x[:, 5::6]
 
+    FloatTensor = torch.cuda.FloatTensor if x.is_cuda else torch.FloatTensor
+
     ox = (ox + torch.arange(C.output_cols,
-                            dtype=torch.float32).reshape((1, -1))) * C.stride
+                            dtype=torch.float32).type(FloatTensor).reshape((1, -1))) * C.stride
     oy = (oy + torch.arange(C.output_rows,
-                            dtype=torch.float32).reshape((-1, 1))) * C.stride
+                            dtype=torch.float32).type(FloatTensor).reshape((-1, 1))) * C.stride
 
     w = torch.clamp(w, 0.0, 1.0) * C.input_width
     h = torch.clamp(h, 0.0, 1.0) * C.input_height

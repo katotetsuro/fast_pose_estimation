@@ -11,6 +11,8 @@ def ppn_loss(x, t):
     t: np.array. concatenation of encoded tensor
     """
     assert x.shape == t.shape
+    if x.is_cuda:
+        t = t.cuda()
     batchsize = x.shape[0]
     gt_keypoints = t[:, :6*(C.num_keypoints+1)]
     gt_limbs = t[:, 6*(C.num_keypoints+1):]
