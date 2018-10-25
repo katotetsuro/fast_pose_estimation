@@ -53,8 +53,8 @@ def ppn_loss(x, t):
     # size
     pred_w = torch.sqrt(torch.clamp(keypoints[:, 4::6], 0.0, 1.0))
     pred_h = torch.sqrt(torch.clamp(keypoints[:, 5::6], 0.0, 1.0))
-    gt_w = np.sqrt(gt_keypoints[:, 4::6])
-    gt_h = np.sqrt(gt_keypoints[:, 5::6])
+    gt_w = torch.sqrt(gt_keypoints[:, 4::6])
+    gt_h = torch.sqrt(gt_keypoints[:, 5::6])
     loss_size = torch.sum(
         gt_resp * ((pred_w-gt_w)**2 + (pred_h-gt_h)**2)) * 5 / batchsize
 

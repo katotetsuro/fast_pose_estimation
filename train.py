@@ -118,18 +118,18 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch)
 
         # evaluate on validation set
-#        prec1 = validate(val_loader, model, criterion)
+       prec1 = validate(val_loader, model, criterion)
 
         # remember best prec@1 and save checkpoint
-        # is_best = prec1 > best_prec1
-        # best_prec1 = max(prec1, best_prec1)
-        # save_checkpoint({
-        #     'epoch': epoch + 1,
-        #     'arch': args.arch,
-        #     'state_dict': model.state_dict(),
-        #     'best_prec1': best_prec1,
-        #     'optimizer': optimizer.state_dict(),
-        # }, is_best)
+        is_best = prec1 > best_prec1
+        best_prec1 = max(prec1, best_prec1)
+        save_checkpoint({
+            'epoch': epoch + 1,
+            'arch': args.arch,
+            'state_dict': model.state_dict(),
+            'best_prec1': best_prec1,
+            'optimizer': optimizer.state_dict(),
+        }, is_best)
 
 
 def train(train_loader, model, criterion, optimizer, epoch):
@@ -159,10 +159,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
         tensorboard.add_scalars('train', named_losses, i)
 
         # measure accuracy and record loss
-        #prec1, prec5 = accuracy(output, target, topk=(1, 5))
+        # prec1, prec5 = accuracy(output, target, topk=(1, 5))
         losses.update(loss['loss'].item(), input.size(0))
-        #top1.update(prec1[0], input.size(0))
-        #top5.update(prec5[0], input.size(0))
+        # top1.update(prec1[0], input.size(0))
+        # top5.update(prec5[0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -203,28 +203,28 @@ def validate(val_loader, model, criterion):
             loss = criterion(output, target)
 
             # measure accuracy and record loss
-            prec1, prec5 = accuracy(output, target, topk=(1, 5))
+            # prec1, prec5 = accuracy(output, target, topk=(1, 5))
             losses.update(loss['loss'].item(), input.size(0))
-            top1.update(prec1[0], input.size(0))
-            top5.update(prec5[0], input.size(0))
+            # top1.update(prec1[0], input.size(0))
+            # top5.update(prec5[0], input.size(0))
 
-            # measure elapsed time
-            batch_time.update(time.time() - end)
-            end = time.time()
+            # # measure elapsed time
+            # batch_time.update(time.time() - end)
+            # end = time.time()
 
-            if i % args.print_freq == 0:
-                print('Test: [{0}/{1}]\t'
-                      'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                      'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                      'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                      'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
-                          i, len(val_loader), batch_time=batch_time, loss=losses,
-                          top1=top1, top5=top5))
+            # if i % args.print_freq == 0:
+            #     print('Test: [{0}/{1}]\t'
+            #           'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+            #           'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
+            #           'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
+            #           'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
+            #               i, len(val_loader), batch_time=batch_time, loss=losses,
+            #               top1=top1, top5=top5))
 
-        print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-              .format(top1=top1, top5=top5))
-
-    return top1.avg
+        # print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
+            #   .format(top1=top1, top5=top5))
+    return losses.avg
+    # return top1.avg
 
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):

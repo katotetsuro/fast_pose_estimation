@@ -35,7 +35,8 @@ class PoseProposalNetwork(nn.Module):
             nn.LeakyReLU(negative_slope=0.1),
             nn.Conv2d(512, 512, 3, padding=1),
             nn.LeakyReLU(negative_slope=0.1),
-            nn.Conv2d(512, self.output_dim, kernel_size=1, padding=0)
+            nn.Conv2d(512, self.output_dim, kernel_size=1, padding=0),
+            nn.ReLU()
         )
 
     def forward(self, x):
