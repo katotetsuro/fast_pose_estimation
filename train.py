@@ -24,9 +24,13 @@ from pose_proposal_networks.loss import ppn_loss
 
 
 parser = argparse.ArgumentParser(description='PoseProposalNetwork Training')
-parser.add_argument('--data-root', metavar='DIR',
+parser.add_argument('--train-data-root', metavar='DIR',
                     help='mscoco image folder')
-parser.add_argument('--annotation', metavar='JSON',
+parser.add_argument('--train-annotation', metavar='JSON',
+                    help='mscoco keypoint annotation')
+parser.add_argument('--val-data-root', metavar='DIR',
+                    help='mscoco image folder')
+parser.add_argument('--val-annotation', metavar='JSON',
                     help='mscoco keypoint annotation')
 parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
@@ -106,9 +110,14 @@ def main():
         return t(img), b1, b2
 
     train_dataset = CocoKeypoint(
-        args.data_root, args.annotation, _transform)
+        args.train_data_root, args.train_annotation, _transform)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=True,
+        num_workers=args.workers, pin_memory=True)
+    val_dataset = CocoKeypoint(
+        args.val_data_root, args.val_annotation, _transform)
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -155,9 +164,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute output
         output = model(input)
         loss = criterion(output, target)
-        named_losses = {k: v.item() for k, v in loss.items()}¥
+        named_losses = {k: v.item() for k, v in loss.items()}
 #        tensorboard.add_scalars('train', named_losses, i)
-        for k, v in named_losses.item():
+        for k, v in named_losses.items():
             tensorboard.add_scalar(k, v)
 
         # measure accuracy and record loss
