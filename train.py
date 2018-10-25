@@ -132,8 +132,8 @@ def main():
         prec1 = validate(val_loader, model, criterion)
 
         # remember best prec@1 and save checkpoint
-        is_best = prec1 > best_prec1
-        best_prec1 = max(prec1, best_prec1)
+        is_best = prec1 < best_prec1
+        best_prec1 = min(prec1, best_prec1)
         save_checkpoint({
             'epoch': epoch + 1,
             'state_dict': model.state_dict(),
