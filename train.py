@@ -57,6 +57,7 @@ parser.add_argument('--seed', default=None, type=int,
 parser.add_argument('--gpu', default=None, type=int,
                     help='GPU id to use.')
 args = parser.parse_args()
+tensorboard = SummaryWriter()
 
 
 def main():
@@ -120,6 +121,7 @@ def main():
         val_dataset, batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
+    best_prec1 = 1000
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
 
@@ -134,7 +136,6 @@ def main():
         best_prec1 = max(prec1, best_prec1)
         save_checkpoint({
             'epoch': epoch + 1,
-            'arch': args.arch,
             'state_dict': model.state_dict(),
             'best_prec1': best_prec1,
             'optimizer': optimizer.state_dict(),
@@ -147,7 +148,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
     losses = AverageMeter()
     top1 = AverageMeter()
     top5 = AverageMeter()
-    tensorboard = SummaryWriter()
 
     # switch to train mode
     model.train()
