@@ -155,8 +155,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # compute output
         output = model(input)
         loss = criterion(output, target)
-        named_losses = {k: v.item() for k, v in loss.items()}
-        tensorboard.add_scalars('train', named_losses, i)
+        named_losses = {k: v.item() for k, v in loss.items()}¥
+#        tensorboard.add_scalars('train', named_losses, i)
+        for k, v in named_losses.item():
+            tensorboard.add_scalar(k, v)
 
         # measure accuracy and record loss
         # prec1, prec5 = accuracy(output, target, topk=(1, 5))
