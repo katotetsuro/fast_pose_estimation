@@ -16,11 +16,11 @@ def ppn_loss(x, t):
     batchsize = x.shape[0]
     gt_keypoints = t[:, :6*(C.num_keypoints+1)]
     gt_limbs = t[:, 6*(C.num_keypoints+1):]
-    gt_resp = gt_keypoints[:, 0::6]
+    gt_resp = (gt_keypoints[:, 0::6] == 1).float()
 
     keypoints = x[:, :6*(C.num_keypoints+1)]
     limbs = x[:, 6*(C.num_keypoints+1):]
-    resp = (keypoints[:, 0::6] == 1).float()
+    resp = keypoints[:, 0::6]
 
     loss_resp = torch.sum((
         resp - gt_resp)**2) * 0.25 / batchsize
