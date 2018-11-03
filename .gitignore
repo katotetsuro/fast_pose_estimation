@@ -6,3 +6,4 @@ runs
 test.py
 .DS_Store
 pose_proposal_networks_chainer/
+*.pth.tar

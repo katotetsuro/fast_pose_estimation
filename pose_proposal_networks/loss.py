@@ -5,6 +5,49 @@ from pose_proposal_networks.coder import decode
 from pose_proposal_networks.pose_proposal_network import PoseProposalNetwork as C
 
 
+# https://github.com/facebookresearch/Detectron/blob/master/detectron/utils/keypoints.py
+keypoints = [
+    'nose',
+    'left_eye',
+    'right_eye',
+    'left_ear',
+    'right_ear',
+    'left_shoulder',
+    'right_shoulder',
+    'left_elbow',
+    'right_elbow',
+    'left_wrist',
+    'right_wrist',
+    'left_hip',
+    'right_hip',
+    'left_knee',
+    'right_knee',
+    'left_ankle',
+    'right_ankle'
+]
+
+kp_lines = [
+    [keypoints.index('left_eye'), keypoints.index('right_eye')],
+    [keypoints.index('left_eye'), keypoints.index('nose')],
+    [keypoints.index('right_eye'), keypoints.index('nose')],
+    [keypoints.index('right_eye'), keypoints.index('right_ear')],
+    [keypoints.index('left_eye'), keypoints.index('left_ear')],
+    [keypoints.index('right_shoulder'), keypoints.index('right_elbow')],
+    [keypoints.index('right_elbow'), keypoints.index('right_wrist')],
+    [keypoints.index('left_shoulder'), keypoints.index('left_elbow')],
+    [keypoints.index('left_elbow'), keypoints.index('left_wrist')],
+    [keypoints.index('right_hip'), keypoints.index('right_knee')],
+    [keypoints.index('right_knee'), keypoints.index('right_ankle')],
+    [keypoints.index('left_hip'), keypoints.index('left_knee')],
+    [keypoints.index('left_knee'), keypoints.index('left_ankle')],
+    [keypoints.index('right_shoulder'), keypoints.index('left_shoulder')],
+    [keypoints.index('right_hip'), keypoints.index('left_hip')],
+]
+
+kp_from = [l[0] for l in kp_lines]
+kp_to = [l[1] for l in kp_lines]
+
+
 def ppn_loss(x, t):
     """
     x: torch.Tensor. predicted tensor. Shape should be (batch_size, 6(K+1)+H'W'L, H, W)
@@ -59,28 +102,36 @@ def ppn_loss(x, t):
         gt_resp * ((pred_w-gt_w)**2 + (pred_h-gt_h)**2)) * 5 / batchsize
 
     # limb 0.5
-    # loss_limb = 0
-    # for i in range(C.output_rows):
-    #     for j in range(C.output_cols):
-    #         for dx, dy in itertools.product(range(-4, 5), repeat=2):
-    #             ind_y = i + dy
-    #             ind_x = j + dx
-    #             if ind_y < 0 or C.output_rows <= ind_y or ind_x < 0 or C.output_cols <= ind_x:
-    #                 continue
-    #             r1 = keypoints[:, 0::6, j, i]
-    #             r2 = keypoints[:, 0::6, ind_x, ind_y]
-    #             m_r = F.maximum(r1, r2)
-    #             p_r = r1 * r2
-    #             limbs[:, ]
+    loss_limb = 0
+    for y in range(C.output_rows):
+        for x in range(C.output_cols):
+            r1 = gt_keypoints[:, 0::6, y, x]
+            r1 = r1[:, kp_from]
+            assert r1.shape[1] == C.num_limbs
+            for dy in range(-C.Hp//2, C.Hp//2+1):
+                for dx in range(-C.Wp//2, C.Wp//2+1):
+                    ind_y = y + dy
+                    ind_x = x + dx
+                    if ind_y < 0 or C.output_rows <= ind_y or ind_x < 0 or C.output_cols <= ind_x:
+                        continue
 
-    # loss_limb *= 0.5 / batchsize
+                    r2 = gt_keypoints[:, 0::6, ind_y, ind_y]
+                    r2 = r2[:, kp_to]
+                    max_r = torch.max(r1, r2)
+                    prod_r = r1 * r2
+                    start = (y*C.output_cols+x)*C.num_limbs
+                    loss_limb += torch.sum(
+                        max_r * (limbs[:, start:(start+C.num_limbs), y, x] - prod_r)**2)
 
-    total_loss = loss_resp + loss_iou + loss_coor + loss_size
+    loss_limb *= 0.5 / batchsize
+
+    total_loss = loss_resp + loss_iou + loss_coor + loss_size + loss_limb
 
     return {
         'loss_resp': loss_resp,
         'loss_iou': loss_iou,
         'loss_coor': loss_coor,
         'loss_size': loss_size,
+        'loss_limb': loss_limb,
         'loss': total_loss
     }
