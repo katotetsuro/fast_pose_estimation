@@ -115,7 +115,7 @@ def ppn_loss(x, t):
                     if ind_y < 0 or C.output_rows <= ind_y or ind_x < 0 or C.output_cols <= ind_x:
                         continue
 
-                    r2 = gt_keypoints[:, 0::6, ind_y, ind_y]
+                    r2 = gt_keypoints[:, 0::6, ind_y, ind_x]
                     r2 = r2[:, kp_to]
                     max_r = torch.max(r1, r2)
                     prod_r = r1 * r2
