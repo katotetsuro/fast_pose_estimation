@@ -101,7 +101,7 @@ def ppn_loss(x, t):
     loss_size = torch.sum(
         gt_resp * ((pred_w-gt_w)**2 + (pred_h-gt_h)**2)) * 5 / batchsize
 
-    # limb 0.5
+    # limb
     loss_limb = 0
     for y in range(C.output_rows):
         for x in range(C.output_cols):

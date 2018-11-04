@@ -68,7 +68,7 @@ def encode(gt_person_bboxes, gt_parts_bboxes):
             w /= C.input_width
 
             # responsibility
-            t[6*ind+ind_responsibility, row, col] += 1
+            t[6*ind+ind_responsibility, row, col] += 1 if box[4] == 2 else 0
             # IoU(no need to preprare)
 
             # oy, ox, h, w
