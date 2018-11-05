@@ -105,7 +105,7 @@ def ppn_loss(x, t):
     loss_limb = 0
     for y in range(C.output_rows):
         for x in range(C.output_cols):
-            r1 = gt_keypoints[:, 0::6, y, x]
+            r1 = gt_resp[:, :, y, x]
             r1 = r1[:, kp_from]
             assert r1.shape[1] == C.num_limbs
             for i, dy in enumerate(range(-C.Hp//2+1, C.Hp//2+1)):
@@ -115,7 +115,7 @@ def ppn_loss(x, t):
                     if ind_y < 0 or C.output_rows <= ind_y or ind_x < 0 or C.output_cols <= ind_x:
                         continue
 
-                    r2 = gt_keypoints[:, 0::6, ind_y, ind_x]
+                    r2 = gt_resp[:, :, ind_y, ind_x]
                     r2 = r2[:, kp_to]
                     max_r = torch.max(r1, r2)
                     prod_r = r1 * r2
