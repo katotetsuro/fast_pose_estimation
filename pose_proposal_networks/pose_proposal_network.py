@@ -33,7 +33,7 @@ class PoseProposalNetwork(nn.Module):
         self.model = nn.Sequential(
             *extractor,
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(),
+            nn.BatchNorm2d(512),
             nn.LeakyReLU(negative_slope=0.1),
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.LeakyReLU(negative_slope=0.1),
