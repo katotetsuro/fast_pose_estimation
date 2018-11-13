@@ -1,5 +1,6 @@
 import torchvision
 import torch.nn as nn
+from pose_proposal_networks.coder import decode
 
 
 class PoseProposalNetwork(nn.Module):
@@ -31,12 +32,12 @@ class PoseProposalNetwork(nn.Module):
         extractor = list(resnet.children())[:8]
         self.model = nn.Sequential(
             *extractor,
-            nn.Conv2d(512, 512, 3, padding=1),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(),
             nn.LeakyReLU(negative_slope=0.1),
-            nn.Conv2d(512, 512, 3, padding=1),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.LeakyReLU(negative_slope=0.1),
-            nn.Conv2d(512, self.output_dim, kernel_size=1, padding=0),
-            nn.ReLU()
+            nn.Conv2d(512, self.output_dim, kernel_size=1, padding=0)
         )
 
     def forward(self, x):
@@ -60,3 +61,16 @@ class PoseProposalNetwork(nn.Module):
         parts_bboxes[:, :, 1:-1:2] *= sx
 
         return resized_img, person_bboxes, parts_bboxes
+
+    def predict(self, img):
+        """
+        img: PIL Image or numpy.ndarray (H x W x C) in the range [0, 255] 
+        """
+        img = self.resize(img)
+        img = torchvision.transforms.functional.to_tensor(img)
+
+        with torch.no_grad():
+            y = self.__call__(img)
+
+        resp, conf, y1, x1, y2, x2 = decode(y)
+        raise NotImplementedError()
